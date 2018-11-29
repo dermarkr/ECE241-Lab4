@@ -1,0 +1,68 @@
+module main(SW, KEY, LEDR);
+input [9:0] SW;
+
+input [3:0] KEY;
+output [7:0] LEDR;
+
+
+wire LSR;
+
+mux2to1 m0(.x(LEDR[0]), .y(1'b0), .s(KEY[3]), .m(LSR));
+
+shift s0(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[7]), .InL(LEDR[1]), .d(SW[0]), .Out(LEDR[0]));
+shift s1(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[0]), .InL(LEDR[2]), .d(SW[1]), .Out(LEDR[1]));
+shift s2(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[1]), .InL(LEDR[3]), .d(SW[2]), .Out(LEDR[2]));
+shift s3(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[2]), .InL(LEDR[4]), .d(SW[3]), .Out(LEDR[3]));
+shift s4(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[3]), .InL(LEDR[5]), .d(SW[4]), .Out(LEDR[4]));
+shift s5(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[4]), .InL(LEDR[6]), .d(SW[5]), .Out(LEDR[5]));
+shift s6(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[5]), .InL(LEDR[7]), .d(SW[6]), .Out(LEDR[6]));
+shift s7(.clock(KEY[0]), .reset(SW[9]), .loadn(SW[1]), .rotateRight(KEY[2]), .InR(LEDR[6]), .InL(LSR), .d(SW[7]), .Out(LEDR[7]));
+
+
+endmodule
+
+module mux2to1(x, y, s, m);
+    input x; //select 0
+    input y; //select 1
+    input s; //select signal
+    output m; //output
+  
+    assign m = s ? y : x;
+
+endmodule
+
+
+
+module bitregister(clock, Reset_b, d, q);
+
+	input clock;
+	input Reset_b;
+	input d;
+	output reg q;
+
+	always@(posedge clock)
+	begin
+		if(Reset_b == 1'b1)
+			q<=0;
+		else
+			q<=d;
+	end
+
+endmodule
+
+module shift(clock, reset, loadn, rotateRight, InR, InL, d, Out);
+input clock;
+input reset;
+input loadn;
+input rotateRight;
+input InR, InL, d;
+output Out;
+
+wire temp1, temp2;
+
+mux2to1 m1(.x(InR), .y(InL), .s(rotateRight), .m(temp1));
+mux2to1 m2(.x(d), .y(temp1), .s(loadn), .m(temp2));
+bitregister b1(.clock(clock), .Reset_b(reset), .d(temp2), .q(Out));
+
+endmodule
+
